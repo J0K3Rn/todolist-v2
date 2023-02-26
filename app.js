@@ -1,5 +1,10 @@
 //jshint esversion: 6
 
+/*
+    ToDo
+        - Fill out database credentials in the 'Database Setup' section for MongoDB Atlas
+*/
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const date = require(__dirname + "/date.js");
@@ -10,8 +15,18 @@ const mongoose = require('mongoose');
 mongoose.set('strictQuery', false);
 
 // Database Setup
-mongoose.connect('mongodb://localhost:27017/todolistDB');
+if(process.env.PORT === undefined){
+    // Local Database connection
+    mongoose.connect('mongodb://localhost:27017/todolistDB'); 
+} else {
+    // Cloud Database connection
+    let username = "";
+    let password = "";
+    let clusername = "";
+    mongoose.connect('mongodb+srv://' + username + ':' + password + '@' + clusername + '.mongodb.net/todolistDB'); 
+}
 
+// Database Schema's
 const itemsSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -87,9 +102,6 @@ app.post("/", function (req, res) {
         name: itemName
     });
 
-    console.log(listName);
-    console.log(itemName);
-
     if (listName == date.getDate()) {
         item.save();
         res.redirect("/");
@@ -114,9 +126,6 @@ app.post("/delete", function (req, res) {
     const checkedItemId = req.body.checkbox;
     const listName = req.body.listName;
 
-    console.log(listName);
-    console.log(checkedItemId);
-
     if (listName == date.getDate()) {
         Item.findByIdAndRemove(
             checkedItemId,
@@ -139,9 +148,8 @@ app.post("/delete", function (req, res) {
                 }
             }
         }, function (err, results) {
-            console.log("FOUND");
-            console.log(results);
             if (!err) {
+                console.log("Successfully deleted the checked item from custom list!");
                 res.redirect("/" + listName);
             } else {
                 console.log(err);
@@ -163,7 +171,6 @@ app.get("/:customListName", function (req, res) {
     }, function (err, foundList) {
         if (!err) {
             if (!foundList) {
-                console.log("List doesn't exist!");
                 const list = new List({
                     name: customListName,
                     items: defaultItems
@@ -173,7 +180,6 @@ app.get("/:customListName", function (req, res) {
 
                 res.redirect("/" + customListName);
             } else {
-                console.log("List exists!");
                 res.render("list", {
                     listTitle: foundList.name,
                     newListItem: foundList.items
@@ -183,11 +189,15 @@ app.get("/:customListName", function (req, res) {
     });
 });
 
-
 app.get("/about", function (req, res) {
     res.render("about");
 });
 
 app.listen(process.env.PORT || 3000, function () {
-    console.log("Server is running on port 3000.");
+    console.log(process.env.PORT);
+    if(process.env.PORT === undefined){
+        console.log("Server is running on port 3000.");
+    } else {
+        console.log("Server is running on port " + process.env.PORT + ".");
+    }
 });

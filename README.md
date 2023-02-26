@@ -2,6 +2,8 @@
  
 To-Do List Web Application built using node, express, ejs, and MongoDB
 
+Ready to be deployed using MongoDB Atlas and Heroku
+
 Features:
 - Utilizes MongoDB to have persistent lists across sessions
 - Uses dynamic urls and dynamically created lists with the ability to add and delete from
